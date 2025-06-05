@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dear Ali</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&family=Pacifico&display=swap');
+
+  :root {
+    --primary-color: #ff6f91;
+    --secondary-color: #ff9671;
+    --background-color: #fff0f6;
+    --text-color: #4a4a4a;
+    --accent-color: #ff3366;
+    --paper-bg: #fff9fb;
+    --shadow-color: rgba(255,111,145,0.3);
+
+    --night-background-color: #2c2847;
+    --night-paper-bg: #3a395a;
+    --night-text-color: #f0e9ff;
+    --night-accent-color: #ff79a3;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--background-color);
+    font-family: 'Quicksand', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 1rem;
+    transition: background 0.5s ease;
+  }
+
+  .container {
+    background: var(--paper-bg);
+    max-width: 520px;
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px var(--shadow-color);
+    padding: 2rem 2.5rem 3rem;
+    position: relative;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-color);
+    background-image:
+      radial-gradient(circle at 0 0, #fff5f9 2px, transparent 2px),
+      radial-gradient(circle at 10px 10px, #fff5f9 2px, transparent 2px);
+    background-color: var(--paper-bg);
+    background-size: 20px 20px;
+    animation: fadeIn 1s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+
+  h1 {
+    font-family: 'Pacifico', cursive;
+    font-size: 2.8rem;
+    margin-bottom: 0.2rem;
+    color: var(--primary-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .envelope-icon {
+    width: 30px;
+    height: 24px;
+    fill: var(--primary-color);
+    filter: drop-shadow(0 0 1.5px var(--primary-color));
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-top: 0;
+    color: var(--secondary-color);
+  }
+
+  .date-line {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #ba7b8a;
+    margin-bottom: 1rem;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  p.letter-content {
+    font-size: 1.15rem;
+    line-height: 1.5;
+    margin: 1.8rem 0 2rem;
+    white-space: pre-line;
+    text-align: left;
+    color: inherit;
+  }
+
+  .quote {
+    font-style: italic;
+    font-size: 1.1rem;
+    margin: 2rem 1rem 1rem;
+    color: var(--accent-color);
+  }
+
+  .footer {
+    font-size: 1rem;
+    color: var(--accent-color);
+    font-weight: 700;
+  }
+
+  .heart-background {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: -1;
+    overflow: hidden;
+    transition: background 0.5s ease;
+  }
+  .heart {
+    position: absolute;
+    width: 20px;
+    height: 18px;
+    background: var(--primary-color);
+    transform: rotate(-45deg);
+    border-radius: 10px 10px 0 0;
+    animation: floatUp 7s linear infinite;
+    opacity: 0.8;
+    will-change: transform, opacity;
+  }
+  .heart::before,
+  .heart::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 18px;
+    background: var(--primary-color);
+    border-radius: 10px 10px 0 0;
+  }
+  .heart::before {
+    top: -10px;
+    left: 0;
+  }
+  .heart::after {
+    top: 0;
+    left: 10px;
+  }
+  @keyframes floatUp {
+    0% {
+      transform: translateY(100vh) rotate(-45deg);
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateY(-10vh) rotate(-45deg);
+      opacity: 0;
+    }
+  }
+
+  /* Night mode styles */
+  body.night {
+    background: var(--night-background-color);
+  }
+  body.night .container {
+    background-color: var(--night-paper-bg);
+    color: var(--night-text-color);
+    box-shadow: 0 8px 20px rgba(255,121,163,0.4);
+    background-image:
+      radial-gradient(circle at 0 0, #4a4566 2px, transparent 2px),
+      radial-gradient(circle at 10px 10px, #4a4566 2px, transparent 2px);
+  }
+  body.night h1 {
+    color: var(--night-accent-color);
+    filter: drop-shadow(0 0 2px var(--night-accent-color));
+  }
+  body.night h2 {
+    color: #dea1b9;
+  }
+  body.night .quote {
+    color: #ff8fbb;
+  }
+  body.night .heart {
+    background: var(--night-accent-color);
+  }
+  body.night .heart::before,
+  body.night .heart::after {
+    background: var(--night-accent-color);
+  }
+
+  .theme-toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    outline: none;
+    color: white;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 6px var(--shadow-color);
+    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .theme-toggle-btn:hover {
+    background: var(--secondary-color);
+  }
+  .theme-toggle-btn:focus {
+    outline: 2px solid var(--accent-color);
+  }
+
+  @media (max-width: 600px) {
+    .container {
+      padding: 1.5rem 1.8rem 2.5rem;
+      border-radius: 15px;
+      max-width: 95vw;
+    }
+    h1 {
+      font-size: 2.2rem;
+    }
+    p.letter-content {
+      font-size: 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<button aria-label="Toggle Day/Night Mode" class="theme-toggle-btn" id="themeToggle">🌙</button>
+
+<div class="heart-background" id="heart-bg"></div>
+
+<div class="container" role="main" aria-label="Cute letter message">
+  <div class="date-line" aria-label="Letter date">June 5, 2025</div>
+  <h1>
+    <svg class="envelope-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5zm2 0v.511l8 5.333 8-5.333V5H4zm16 2.51-7.2 4.8a1 1 0 0 1-1.6 0L4 7.51V19h16v-11.49z"/>
+    </svg>
+    Dear Ali,
+  </h1>
+  <h2>A Little Message Just for You 💌</h2>
+  <p class="letter-content">
+    I don’t even know where to begin.<br /><br />
+    Honestly, I hadn’t planned on meeting anyone that night. It was just one of those quiet, restless evenings—too late to sleep, too early to feel okay. So there I was on Omegle, scrolling through strangers, half-laughing at how strange the internet can be, and half just… feeling kind of empty.<br /><br />
+    And then you popped up.<br /><br />
+    At first, I thought it would be just another short, awkward chat. But then you said something—maybe a joke, maybe just your vibe—but whatever it was, it made me pause. It made me stay. You felt different. Easy to talk to.<br /><br />
+    We ended up talking for way longer than I expected—about random stuff, deep stuff, things I didn’t think I’d ever share with a stranger. It was one of those conversations that just flowed, where time seemed to blur. I didn’t feel alone anymore. You made that night feel lighter.<br /><br />
+    You probably didn’t even realize it, but you changed the energy of the entire night. What started as boredom turned into something I still think about. And that’s rare—especially online.<br /><br />
+    So yeah, I just wanted to say thank you. For showing up. For being yourself. For talking to me like we’d known each other for longer than just a few minutes.<br /><br />
+    I never expected us to end up where we are now. A stranger I met online somehow turned into someone I truly cherish. From random chats to late-night talks, your presence became reassuring—a calm solace in a world that may feel too loud, rapid, and uncertain. You brought laughter, light, and a sense of understanding I didn’t know I needed. It’s rare—like finding something valuable in the most unexpected place.<br /><br />
+    Sometimes I think about how easily we could’ve missed each other that night. What if you’d connected with someone else instead? Honestly, I’d be jealous… just kidding. Well, kind of. Because I’m really glad it ended up being you.<br /><br />
+    I still remember the night we were supposed to meet in person—it was absolute chaos. My phone had died, and I was lost. I had to stop at a 7/11 just to charge it. And of course, the moment I stepped outside, it started pouring. I got stuck somewhere in Dangwa, desperate to reach you, but everything was flooded.<br /><br />
+    Meanwhile, your friends were worried—and I get it. From their perspective, you were meeting someone from the internet. What if something had happened to you? They were just being protective. They ended up leaving you, and you were alone, waiting for me. You told me that you had an anxiety attack, and I was so worried.<br /><br />
+    As soon as I could, I rushed to our meeting place. I walked into the mall, drenched by the rain. but when I saw you… it was like everything else faded. The stress, the chaos—it all disappeared. You were there, and it was all worth it.<br /><br />
+    Thank you for being patient with me, seeing me, and allowing me to see you as well. What we discovered, however surprising, is something I will never take casually. Maybe we started as two restless souls in a strange part of the internet, but you're now someone I care deeply about.<br /><br />
+    No matter where this path leads us, I just wanted you to know that you have made a difference. You matter to me. And I'm so glad it was you.
+  </p>
+  <div class="quote" aria-label="Inspirational quote">"Sometimes, the most unexpected connections become the most cherished stories."</div>
+</div>
+
+<script>
+
+  const heartBg = document.getElementById('heart-bg');
+
+  function createHeart() {
+    const heart = document.createElement('div');
+    heart.classList.add('heart');
+    heart.style.left = Math.random() * 100 + 'vw';
+    heart.style.animationDuration = 5 + Math.random() * 5 + 's';
+    heart.style.opacity = 0.3 + Math.random() * 0.7;
+    heartBg.appendChild(heart);
+    heart.addEventListener('animationend', () => heart.remove());
+  }
+
+  setInterval(createHeart, 500);
+
+  const themeToggle = document.getElementById('themeToggle');
+  const body = document.body;
+
+  if (localStorage.getItem('theme') === 'night') {
+    body.classList.add('night');
+    themeToggle.textContent = '☀️';
+  }
+
+  themeToggle.addEventListener('click', () => {
+    body.classList.toggle('night');
+    if (body.classList.contains('night')) {
+      themeToggle.textContent = '☀️';
+      localStorage.setItem('theme', 'night');
+    } else {
+      themeToggle.textContent = '🌙';
+      localStorage.setItem('theme', 'day');
+    }
+  });
+</script>
+
+</body>
+</html>
+
